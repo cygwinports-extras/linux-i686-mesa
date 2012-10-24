@@ -13,12 +13,13 @@ compiler, and installs into the
 HOMEPAGE="http://www.mesa3d.org/"
 SRC_URI="ftp://ftp.freedesktop.org/pub/mesa/${PV}/MesaLib-${PV}.tar.bz2"
 SRC_DIR="Mesa-${PV}"
+PATCH_URI="8.0.2-shared-glapi.patch"
 
 # glu moved to separate repo for 9.0
 PKG_NAMES="${NAME} linux-i686-glu"
 linux_i686_mesa_CONTENTS="--exclude=*GLU* --exclude=*glu* usr/"
 linux_i686_glu_SUMMARY="OpenGL Utility library for Linux i686 toolchain"
-linux_i686_glu_CONTENTS="${CROSS_INCLUDEDIR#/}/GL/glu.h ${CROSS_LIBDIR#/}/libGLU.* ${CROSS_LIBDIR#/}/pkgconfig/glu.pc"
+linux_i686_glu_CONTENTS="${CROSS_INCLUDEDIR#/}/GL/glu*.h ${CROSS_LIBDIR#/}/libGLU.* ${CROSS_LIBDIR#/}/pkgconfig/glu.pc"
 
 DEPEND="pkgconfig(glproto)
 	pkgconfig(libdrm)
