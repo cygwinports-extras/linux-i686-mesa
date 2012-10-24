@@ -1,0 +1,73 @@
+CROSS_HOST="i686-pc-linux-gnu"
+inherit cross
+
+NAME="linux-i686-mesa"
+VERSION=8.0.4
+RELEASE=1
+CATEGORY="Devel"
+SUMMARY="X11 OpenGL implementation for Linux i686 toolchain"
+DESCRIPTION="This package does NOT contain cygwin binaries.  Instead, it
+contains Linux ELF binaries.  It is for use with the linux-i686-gcc cross
+compiler, and installs into the
+/usr/i686-pc-linux-gnu/sys-root/usr/{lib,include} directories."
+HOMEPAGE="http://www.mesa3d.org/"
+SRC_URI="ftp://ftp.freedesktop.org/pub/mesa/${PV}/MesaLib-${PV}.tar.bz2"
+SRC_DIR="Mesa-${PV}"
+
+# glu moved to separate repo for 9.0
+PKG_NAMES="${NAME} linux-i686-glu"
+linux_i686_mesa_CONTENTS="--exclude=*GLU* --exclude=*glu* usr/"
+linux_i686_glu_SUMMARY="OpenGL Utility library for Linux i686 toolchain"
+linux_i686_glu_CONTENTS="${CROSS_INCLUDEDIR#/}/GL/glu.h ${CROSS_LIBDIR#/}/libGLU.* ${CROSS_LIBDIR#/}/pkgconfig/glu.pc"
+
+DEPEND="pkgconfig(glproto)
+	pkgconfig(libdrm)
+	pkgconfig(udev)
+	pkgconfig(x11)
+	pkgconfig(x11-xcb)
+	pkgconfig(xcb-glx)
+	pkgconfig(xext)
+	pkgconfig(xdamage)
+	pkgconfig(xfixes)
+	pkgconfig(xxf86vm)"
+
+DIFF_EXCLUDES="docs"
+
+src_compile() {
+	lndirs
+	cd ${S}
+	cygautoreconf
+	cd ${B}
+	cygconf \
+		--enable-shared --disable-static --enable-pic \
+		--enable-shared-glapi \
+		--enable-dri \
+		--enable-egl \
+		--disable-gallium-egl \
+		--disable-gallium-llvm \
+		--enable-gbm \
+		--enable-gles1 \
+		--enable-gles2 \
+		--enable-glx \
+		--enable-osmesa \
+		--disable-openvg \
+		--disable-selinux \
+		--disable-xlib-glx \
+		--without-dri-drivers \
+		--without-gallium-drivers
+
+	pushd src/glsl
+	rm -f Makefile
+	cp -f ${S}/src/glsl/Makefile Makefile
+	cygmake CC=gcc CXX=g++ builtin_function.cpp
+	mv builtin_function.cpp{,.bak}
+	cygmake clean
+	mv builtin_function.cpp{.bak,}
+	# make sure we don't try to build this again
+	sed -i -e '/^builtin_function\.cpp:/,/^\t$(PYTHON2)/d' Makefile
+	popd
+
+	cygmake MKLIB_OPTIONS="-arch Linux"
+}
+
+DOCS="docs/COPYING"
